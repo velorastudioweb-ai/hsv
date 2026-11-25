@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowUpRight, Plus, Zap, ZoomIn, ZoomOut } from 'lucide-react'
+import { ArrowUpRight, Check, Plus, Zap, ZoomIn, ZoomOut } from 'lucide-react'
 import type { Product } from '../data/products'
 import { formatPrice } from '../data/products'
 import { useCart } from '../context/CartContext'
@@ -13,19 +13,49 @@ export function ProductCard({ product, priority = false }: { product: Product; p
   const { addItem, buyNow } = useCart()
   const navigate = useNavigate()
   const [zoom, setZoom] = useState(MIN_ZOOM)
+  const [added, setAdded] = useState(false)
+  const [buying, setBuying] = useState(false)
+  const addedTimer = useRef<number | null>(null)
+  const buyTimer = useRef<number | null>(null)
+
+  useEffect(
+    () => () => {
+      if (addedTimer.current) window.clearTimeout(addedTimer.current)
+      if (buyTimer.current) window.clearTimeout(buyTimer.current)
+    },
+    [],
+  )
 
   const changeZoom = (delta: number) =>
     setZoom((current) =>
       Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number((current + delta).toFixed(2)))),
     )
 
+  const handleAdd = () => {
+    addItem(product.slug)
+    setAdded(true)
+    if (addedTimer.current) window.clearTimeout(addedTimer.current)
+    addedTimer.current = window.setTimeout(() => {
+      setAdded(false)
+      addedTimer.current = null
+    }, 1800)
+  }
+
   const handleBuyNow = () => {
+    if (buying) return
     buyNow(product.slug)
-    navigate('/checkout')
+    setBuying(true)
+    if (buyTimer.current) window.clearTimeout(buyTimer.current)
+    // A brief pause lets the button confirm the click before checkout opens.
+    buyTimer.current = window.setTimeout(() => {
+      setBuying(false)
+      buyTimer.current = null
+      navigate('/checkout')
+    }, 350)
   }
 
   return (
-    <article className="product-card" data-reveal>
+    <article className={`product-card${added ? ' product-card--added' : ''}`} data-reveal>
       <div className="product-card__media">
         <Link to={`/products/${product.slug}`} aria-label={`View ${product.name}`}>
           <img
@@ -61,25 +91,6 @@ export function ProductCard({ product, priority = false }: { product: Product; p
             <ZoomIn size={15} />
           </button>
         </div>
-
-        <div className="product-card__actions">
-          <button
-            type="button"
-            className="product-card__action product-card__action--cart"
-            onClick={() => addItem(product.slug)}
-            aria-label={`Add ${product.name} to cart`}
-          >
-            <Plus size={16} /> Add to Cart
-          </button>
-          <button
-            type="button"
-            className="product-card__action product-card__action--buy"
-            onClick={handleBuyNow}
-            aria-label={`Buy ${product.name} now`}
-          >
-            <Zap size={16} /> Buy Now
-          </button>
-        </div>
       </div>
       <div className="product-card__body">
         <span className="product-card__category">{product.category}</span>
@@ -92,6 +103,25 @@ export function ProductCard({ product, priority = false }: { product: Product; p
           <Link to={`/products/${product.slug}`} className="product-card__view">
             View Product <ArrowUpRight size={15} />
           </Link>
+        </div>
+        <div className="product-card__actions">
+          <button
+            type="button"
+            className={`product-card__action product-card__action--cart${added ? ' is-added' : ''}`}
+            onClick={handleAdd}
+            aria-label={`Add ${product.name} to cart`}
+          >
+            {added ? <><Check size={16} /> Added to Cart</> : <><Plus size={16} /> Add to Cart</>}
+          </button>
+          <button
+            type="button"
+            className={`product-card__action product-card__action--buy${buying ? ' is-buying' : ''}`}
+            onClick={handleBuyNow}
+            disabled={buying}
+            aria-label={`Buy ${product.name} now`}
+          >
+            {buying ? <><span className="button-spinner" /> Processing</> : <><Zap size={16} /> Buy Now</>}
+          </button>
         </div>
       </div>
     </article>
