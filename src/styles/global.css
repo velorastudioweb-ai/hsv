@@ -874,6 +874,11 @@ h3 {
   scrollbar-width: none;
 }
 .carousel__track::-webkit-scrollbar { display: none; }
+.carousel__track--auto {
+  scroll-behavior: auto;
+  scroll-snap-type: none;
+}
+.carousel__slide--clone { pointer-events: none; }
 .carousel__slide {
   flex: 0 0 calc((100% - 66px) / 4);
   scroll-snap-align: start;

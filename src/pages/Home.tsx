@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Flame, Leaf, Plus } from 'lucide-react'
+import { ArrowRight, Flame, Leaf } from 'lucide-react'
 import { SectionHeading } from '../components/SectionHeading'
-import { useCart } from '../context/CartContext'
-
+import { ProductCarousel } from '../components/ProductCarousel'
 import { IncentiveStrip } from '../components/IncentiveStrip'
 import { Testimonials } from '../components/Testimonials'
 import { ProductCard } from '../components/ProductCard'
-import { featuredProducts, newArrivals, formatPrice } from '../data/products'
+import { featuredProducts, newArrivals } from '../data/products'
 import { collections } from '../data/site'
 import { useSEO } from '../hooks/useSEO'
 
@@ -17,10 +16,6 @@ export function Home() {
       'Discover handcrafted incense, dhoop, cotton wicks and devotional essentials from HSV Sugandhika. Sacred tradition, handcrafted purity, delivered across India.',
     path: '',
   })
-
-  const { addItem } = useCart()
-  const featuredArrival = newArrivals[0]
-  const otherArrivals = newArrivals.slice(1)
 
   return (
     <>
@@ -102,66 +97,7 @@ export function Home() {
               </Link>
             }
           />
-          {featuredArrival && (
-            <div className="arrivals-editorial" data-reveal>
-              <article className="arrival-feature">
-                <Link to={`/products/${featuredArrival.slug}`} className="arrival-feature__media">
-                  <img
-                    src={featuredArrival.image}
-                    alt={featuredArrival.imageAlt}
-                    loading="eager"
-                  />
-                </Link>
-                <div className="arrival-feature__body">
-                  <span className="arrival-feature__eyebrow">{featuredArrival.category}</span>
-                  <h3 className="arrival-feature__title">
-                    <Link to={`/products/${featuredArrival.slug}`}>{featuredArrival.name}</Link>
-                  </h3>
-                  <p className="arrival-feature__summary">{featuredArrival.summary}</p>
-                  <div className="arrival-feature__foot">
-                    <span className="arrival-feature__price">{formatPrice(featuredArrival.price)}</span>
-                    <button
-                      type="button"
-                      className="button button--primary arrival-feature__add"
-                      onClick={() => addItem(featuredArrival.slug)}
-                    >
-                      Add to Cart
-                    </button>
-                    <Link to={`/products/${featuredArrival.slug}`} className="text-link">
-                      View Product <ArrowRight size={16} />
-                    </Link>
-                  </div>
-                </div>
-              </article>
-              <div className="arrival-side">
-                {otherArrivals.map((product) => (
-                  <div className="arrival-side__item" key={product.slug}>
-                    <Link
-                      to={`/products/${product.slug}`}
-                      className="arrival-side__media"
-                      aria-label={`View ${product.name}`}
-                    >
-                      <img src={product.image} alt={product.imageAlt} loading="lazy" />
-                    </Link>
-                    <Link to={`/products/${product.slug}`} className="arrival-side__body">
-                      <span className="arrival-side__category">{product.category}</span>
-                      <strong className="arrival-side__name">{product.name}</strong>
-                      <span className="arrival-side__price">{formatPrice(product.price)}</span>
-                    </Link>
-                    <button
-                      type="button"
-                      className="arrival-side__add"
-                      onClick={() => addItem(product.slug)}
-                      aria-label={`Add ${product.name} to cart`}
-                      title="Add to cart"
-                    >
-                      <Plus size={18} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <ProductCarousel products={newArrivals} autoScroll />
         </div>
       </section>
 
